@@ -1,0 +1,146 @@
+version: '3.7'
+
+networks:
+  internal:
+    driver: bridge
+  external:
+    driver: bridge
+
+services:
+    traefik:
+        image: traefik:latest
+        container_name: traefik
+        ports:
+            - "80:80"
+            - "443:443"
+            - "8080:8080"
+        volumes:
+            - '/var/run/docker.sock:/var/run/docker.sock:ro'
+            - './traefik/data:/etc/traefik'
+        environment:
+            TZ: "America/Los_Angeles"
+            CF_DNS_API_TOKEN: "${CF_DNS_API_TOKEN}"
+        networks:
+            - internal
+            - external
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.backend=traefik-api"
+            - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+            - "traefik.http.routers.traefik.entryPoints=http, https"
+            - "traefik.http.routers.traefik.rule=host(`traefik.${TRAEFIK_DOMAIN}`)"
+            - "traefik.http.routers.traefik.tls=true"
+            - "traefik.http.routers.traefik.tls.certResolver=cloudflare"
+
+    whoami:
+        image: "containous/whoami"
+        container_name: "simple-service"
+        networks:
+            - internal
+        labels:
+            - "traefik.enable=true"
+            - "traefik.backend=whoami"
+            - "traefik.http.routers.whoami.entryPoints=http, https"
+            - "traefik.http.routers.whoami.rule=Host(`whoami.${TRAEFIK_DOMAIN}`)"
+            - "traefik.http.routers.whoami.tls=true"
+            - "traefik.http.routers.whoami.tls.certResolver=cloudflare"
+
+    pihole:
+        image: pihole/pihole:latest
+        container_name: pihole
+        ports:
+            - "53:53/tcp"
+            - "53:53/udp"
+        environment:
+            ServerIP: "192.168.1.244"
+            TZ: 'America/Los_Angeles'
+            DNSSEC: "false"
+            DNS1: "8.8.8.8"
+            DNS2: "1.1.1.1"
+            IPv6: "false"
+            VIRTUAL_HOST: "pihole.${TRAEFIK_DOMAIN}"
+            VIRTUAL_PORT: "80"
+            PROXY_LOCATION: "pihole"
+            WEBPASSWORD: "NhLisVLfe3AiuHoGPrmkfUJBfKfaNTfPpgBqpW2kjVEoCyr8ZYZqdPxriQmMmM4B"
+        volumes:
+            - './pihole/data/pihole:/etc/pihole'
+            - './pihole/data/dnsmasq.d/:/etc/dnsmasq.d/'
+            - './pihole/data/log/pihole.log:/var/log/pihole.log'
+        dns:
+            - 127.0.0.1
+            - 1.1.1.1
+        networks:
+            - external
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.backend=pihole"
+            - "traefik.http.routers.pihole.entryPoints=http, https"
+            - "traefik.http.routers.pihole.rule=Host(`pihole.${TRAEFIK_DOMAIN}`)"
+            - "traefik.http.routers.pihole.tls=true"
+            - "traefik.http.routers.pihole.tls.certResolver=cloudflare"
+            - "traefik.http.routers.pihole.middlewares=pihole"
+            - "traefik.http.services.pihole.loadbalancer.server.port=80"
+            - "traefik.http.middlewares.pihole.addprefix.prefix=/admin"
+
+    influxdb:
+        image: arm32v7/influxdb:latest
+        volumes:
+            - ./influxdb/data:/var/lib/influxdb
+            - ./influxdb/config/:/etc/influxdb/
+        networks:
+            - internal
+        restart: unless-stopped
+
+    telegraf:
+        image: telegraf:latest
+        environment:
+            HOSTNAME: "telegraf"
+            HOST_PROC: /rootfs/proc
+            HOST_SYS: /rootfs/sys
+            HOST_ETC: /rootfs/etc
+            HOST_VAR: /rootfs/var
+        volumes:
+            - "./telegraf:/etc/telegraf"
+            - "/var/run/docker.sock:/var/run/docker.sock:ro"
+            - "/proc:/rootfs/proc:ro"
+            - "/sys:/rootfs/sys:ro"
+            - "/etc:/rootfs/etc:ro"
+            - "/var:/rootfs/var:ro"
+        networks:
+            - internal
+        depends_on:
+            - influxdb
+        restart: unless-stopped
+
+    kapacitor:
+        image: kapacitor:latest
+        volumes:
+            - "./kapacitor/data:/var/lib/kapacitor"
+            - "./kapacitor/config:/etc/kapacitor"
+        networks:
+            - internal
+
+    chronograf:
+        image: chronograf:latest
+        environment:
+            RESOURCES_PATH: "/usr/share/chronograf/resources"
+        volumes:
+            - "./chronograf/data:/var/lib/chronograf"
+        networks:
+            - external
+            - internal
+        depends_on:
+            - kapacitor
+            - influxdb
+            - telegraf
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.backend=chronograf"
+            - "traefik.http.routers.chronograf.entryPoints=http, https"
+            - "traefik.http.routers.chronograf.rule=Host(`chronograf.${TRAEFIK_DOMAIN}`)"
+            - "traefik.http.routers.chronograf.tls=true"
+            - "traefik.http.routers.chronograf.tls.certResolver=cloudflare"
+            - "traefik.http.routers.chronograf.middlewares=chronograf"
