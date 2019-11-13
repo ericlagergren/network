@@ -16,7 +16,9 @@ services:
             - "8080:8080"
         volumes:
             - '/var/run/docker.sock:/var/run/docker.sock:ro'
-            - './traefik/data:/etc/traefik'
+            - './data/traefik/etc/traefik:/etc/traefik'
+            - './traefik/traefik.toml:/etc/traefik/traefik.toml'
+            - './traefik/dynamic_conf.toml:/etc/traefik/dynamic_conf.toml'
         environment:
             TZ: "America/Los_Angeles"
             CF_DNS_API_TOKEN: "${CF_DNS_API_TOKEN}"
@@ -64,9 +66,11 @@ services:
             PROXY_LOCATION: "pihole"
             WEBPASSWORD: "NhLisVLfe3AiuHoGPrmkfUJBfKfaNTfPpgBqpW2kjVEoCyr8ZYZqdPxriQmMmM4B"
         volumes:
-            - './pihole/data/pihole:/etc/pihole'
-            - './pihole/data/dnsmasq.d/:/etc/dnsmasq.d/'
-            - './pihole/data/log/pihole.log:/var/log/pihole.log'
+            - './data/pihole/etc/pihole:/etc/pihole'
+            - './data/pihole/dnsmasq.d/:/etc/dnsmasq.d/'
+            - './data/pihole/dnsmasq.d/02-dnscrypt.conf:/etc/dnsmasq.d/02-dnscrypt.conf'
+            - './data/pihole/dnsmasq.d/03-pihole.conf:/etc/dnsmasq.d/03-pihole.conf'
+            - './data/pihole/log/pihole.log:/var/log/pihole.log'
         dns:
             - 127.0.0.1
             - 1.1.1.1
@@ -87,8 +91,9 @@ services:
     influxdb:
         image: arm32v7/influxdb:latest
         volumes:
-            - ./influxdb/data:/var/lib/influxdb
-            - ./influxdb/config/:/etc/influxdb/
+            - "./data/influxdb/var/lib/influxdb:/var/lib/influxdb"
+            - "./data/influxdb/etc/influxdb:/etc/influxdb"
+            - "./influxdb/influxdb.conf:/etc/influxdb/influxdb.conf"
         networks:
             - internal
         restart: unless-stopped
@@ -102,12 +107,14 @@ services:
             HOST_ETC: /rootfs/etc
             HOST_VAR: /rootfs/var
         volumes:
-            - "./telegraf:/etc/telegraf"
             - "/var/run/docker.sock:/var/run/docker.sock:ro"
             - "/proc:/rootfs/proc:ro"
             - "/sys:/rootfs/sys:ro"
             - "/etc:/rootfs/etc:ro"
             - "/var:/rootfs/var:ro"
+            - "./data/telegraf/var/lib/telegraf:/var/lib/telegraf"
+            - "./data/telegraf/etc/telegraf:/etc/telegraf"
+            - "./telegraf/telegraf.conf:/etc/telegraf/telegraf.conf"
         networks:
             - internal
         depends_on:
@@ -117,8 +124,9 @@ services:
     kapacitor:
         image: kapacitor:latest
         volumes:
-            - "./kapacitor/data:/var/lib/kapacitor"
-            - "./kapacitor/config:/etc/kapacitor"
+            - "./data/kapacitor/var/lib/kapacitor:/var/lib/kapacitor"
+            - "./data/kapacitor/etc/kapacitor:/etc/kapacitor"
+            - "./kapacitor/kapacitor.conf:/etc/kapacitor/kapacitor.conf"
         networks:
             - internal
 
@@ -127,7 +135,7 @@ services:
         environment:
             RESOURCES_PATH: "/usr/share/chronograf/resources"
         volumes:
-            - "./chronograf/data:/var/lib/chronograf"
+            - "./data/chronograf/chronograf.data:/var/lib/chronograf"
         networks:
             - external
             - internal
