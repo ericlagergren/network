@@ -1,10 +1,16 @@
 version: '3.7'
 
 networks:
-  internal:
-    driver: bridge
-  external:
-    driver: bridge
+    external:
+        driver: bridge
+    internal:
+        internal: true
+    dns:
+        driver: bridge
+        ipam:
+            driver: default
+            config:
+                - subnet: 172.16.238.0/24
 
 services:
     traefik:
@@ -36,9 +42,11 @@ services:
 
     whoami:
         image: "containous/whoami"
-        container_name: "simple-service"
+        container_name: whoami
         networks:
             - internal
+        depends_on:
+            - traefik
         labels:
             - "traefik.enable=true"
             - "traefik.backend=whoami"
@@ -46,6 +54,17 @@ services:
             - "traefik.http.routers.whoami.rule=Host(`whoami.${TRAEFIK_DOMAIN}`)"
             - "traefik.http.routers.whoami.tls=true"
             - "traefik.http.routers.whoami.tls.certResolver=cloudflare"
+    
+    dnscrypt:
+        image: dnscrypt
+        container_name: dnscrypt
+        volumes:
+            - "./dnscrypt-proxy/dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml"
+        networks:
+            dns:
+                ipv4_address: 172.16.238.2
+        depends_on:
+            - traefik
 
     pihole:
         image: pihole/pihole:latest
@@ -74,6 +93,10 @@ services:
             - 1.1.1.1
         networks:
             - external
+            - dns
+        depends_on:
+            - dnscrypt
+            - traefik
         restart: unless-stopped
         labels:
             - "traefik.enable=true"
@@ -88,16 +111,20 @@ services:
 
     influxdb:
         image: arm32v7/influxdb:latest
+        container_name: influxdb
         volumes:
             - "./data/influxdb/var/lib/influxdb:/var/lib/influxdb"
             - "./data/influxdb/etc/influxdb:/etc/influxdb"
             - "./influxdb/influxdb.conf:/etc/influxdb/influxdb.conf"
         networks:
             - internal
+        depends_on:
+            - traefik
         restart: unless-stopped
 
     telegraf:
         image: telegraf:latest
+        container_name: telegraf
         environment:
             HOSTNAME: "telegraf"
             HOST_PROC: /rootfs/proc
@@ -117,9 +144,11 @@ services:
             - internal
         depends_on:
             - influxdb
+            - traefik
         restart: unless-stopped
 
     kapacitor:
+        container_name: kapacitor
         image: kapacitor:latest
         volumes:
             - "./data/kapacitor/var/lib/kapacitor:/var/lib/kapacitor"
@@ -129,6 +158,7 @@ services:
             - internal
 
     chronograf:
+        container_name: chronograf
         image: chronograf:latest
         environment:
             RESOURCES_PATH: "/usr/share/chronograf/resources"
@@ -141,6 +171,7 @@ services:
             - kapacitor
             - influxdb
             - telegraf
+            - traefik
         restart: unless-stopped
         labels:
             - "traefik.enable=true"
