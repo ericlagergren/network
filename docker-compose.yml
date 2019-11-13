@@ -67,10 +67,9 @@ services:
             WEBPASSWORD: "NhLisVLfe3AiuHoGPrmkfUJBfKfaNTfPpgBqpW2kjVEoCyr8ZYZqdPxriQmMmM4B"
         volumes:
             - './data/pihole/etc/pihole:/etc/pihole'
-            - './data/pihole/dnsmasq.d/:/etc/dnsmasq.d/'
-            - './data/pihole/dnsmasq.d/02-dnscrypt.conf:/etc/dnsmasq.d/02-dnscrypt.conf'
-            - './data/pihole/dnsmasq.d/03-pihole.conf:/etc/dnsmasq.d/03-pihole.conf'
-            - './data/pihole/log/pihole.log:/var/log/pihole.log'
+            - './data/pihole/dnsmasq.d:/etc/dnsmasq.d'
+            - './pihole/02-dnscrypt.conf:/etc/dnsmasq.d/02-dnscrypt.conf'
+            - './pihole/03-local.conf:/etc/dnsmasq.d/03-local.conf'
         dns:
             - 127.0.0.1
             - 1.1.1.1
@@ -85,8 +84,8 @@ services:
             - "traefik.http.routers.pihole.tls=true"
             - "traefik.http.routers.pihole.tls.certResolver=cloudflare"
             - "traefik.http.routers.pihole.middlewares=pihole"
-            - "traefik.http.services.pihole.loadbalancer.server.port=80"
             - "traefik.http.middlewares.pihole.addprefix.prefix=/admin"
+            - "traefik.http.services.pihole.loadbalancer.server.port=80"
 
     influxdb:
         image: arm32v7/influxdb:latest
@@ -151,4 +150,3 @@ services:
             - "traefik.http.routers.chronograf.rule=Host(`chronograf.${TRAEFIK_DOMAIN}`)"
             - "traefik.http.routers.chronograf.tls=true"
             - "traefik.http.routers.chronograf.tls.certResolver=cloudflare"
-            - "traefik.http.routers.chronograf.middlewares=chronograf"
