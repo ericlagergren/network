@@ -76,8 +76,8 @@ services:
             ServerIP: "192.168.1.244"
             TZ: 'America/Los_Angeles'
             DNSSEC: "false"
-            DNS1: "8.8.8.8"
-            DNS2: "1.1.1.1"
+            DNS1: "172.16.238.2#5300"
+            DNS2: "172.16.238.2#5300"
             IPv6: "false"
             VIRTUAL_HOST: "pihole.${TRAEFIK_DOMAIN}"
             VIRTUAL_PORT: "80"
@@ -90,7 +90,6 @@ services:
             - './pihole/03-local.conf:/etc/dnsmasq.d/03-local.conf'
         dns:
             - 127.0.0.1
-            - 1.1.1.1
         networks:
             - external
             - dns
