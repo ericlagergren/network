@@ -1,7 +1,7 @@
 version: '3.7'
 
 networks:
-    external:
+    traefik:
         driver: bridge
     internal:
         internal: true
@@ -19,6 +19,7 @@ services:
         ports:
             - "80:80"
             - "443:443"
+            - "8080:8080"
         volumes:
             - '/var/run/docker.sock:/var/run/docker.sock:ro'
             - './data/traefik/etc/traefik:/etc/traefik'
@@ -28,12 +29,11 @@ services:
             TZ: "America/Los_Angeles"
             CF_DNS_API_TOKEN: "${CF_DNS_API_TOKEN}"
         networks:
-            - internal
-            - external
+            - traefik
         restart: unless-stopped
         labels:
             - "traefik.enable=true"
-            - "traefik.backend=traefik-api"
+            - "traefik.backend=traefik"
             - "traefik.http.services.traefik.loadbalancer.server.port=8080"
             - "traefik.http.routers.traefik.entryPoints=http, https"
             - "traefik.http.routers.traefik.rule=host(`traefik.${TRAEFIK_DOMAIN}`)"
@@ -44,7 +44,7 @@ services:
         image: "containous/whoami"
         container_name: whoami
         networks:
-            - internal
+            - traefik
         depends_on:
             - traefik
         labels:
@@ -54,6 +54,7 @@ services:
             - "traefik.http.routers.whoami.rule=Host(`whoami.${TRAEFIK_DOMAIN}`)"
             - "traefik.http.routers.whoami.tls=true"
             - "traefik.http.routers.whoami.tls.certResolver=cloudflare"
+            - "traefik.docker.network=${COMPOSE_PROJECT_NAME}_traefik"
     
     dnscrypt:
         image: dnscrypt
@@ -63,8 +64,6 @@ services:
         networks:
             dns:
                 ipv4_address: 172.16.238.2
-        depends_on:
-            - traefik
 
     pihole:
         image: pihole/pihole:latest
@@ -91,7 +90,7 @@ services:
         dns:
             - 127.0.0.1
         networks:
-            - external
+            - traefik
             - dns
         depends_on:
             - dnscrypt
@@ -107,6 +106,7 @@ services:
             - "traefik.http.routers.pihole.middlewares=pihole"
             - "traefik.http.middlewares.pihole.addprefix.prefix=/admin"
             - "traefik.http.services.pihole.loadbalancer.server.port=80"
+            - "traefik.docker.network=${COMPOSE_PROJECT_NAME}_traefik"
 
     influxdb:
         image: arm32v7/influxdb:latest
@@ -117,8 +117,6 @@ services:
             - "./influxdb/influxdb.conf:/etc/influxdb/influxdb.conf"
         networks:
             - internal
-        depends_on:
-            - traefik
         restart: unless-stopped
 
     telegraf:
@@ -143,7 +141,6 @@ services:
             - internal
         depends_on:
             - influxdb
-            - traefik
         restart: unless-stopped
 
     kapacitor:
@@ -164,7 +161,7 @@ services:
         volumes:
             - "./data/chronograf/chronograf.data:/var/lib/chronograf"
         networks:
-            - external
+            - traefik
             - internal
         depends_on:
             - kapacitor
@@ -179,3 +176,4 @@ services:
             - "traefik.http.routers.chronograf.rule=Host(`chronograf.${TRAEFIK_DOMAIN}`)"
             - "traefik.http.routers.chronograf.tls=true"
             - "traefik.http.routers.chronograf.tls.certResolver=cloudflare"
+            - "traefik.docker.network=${COMPOSE_PROJECT_NAME}_traefik"
