@@ -1,0 +1,31 @@
+version: '3.7'
+
+services:
+    traefik:
+        image: traefik:latest
+        container_name: traefik
+        ports:
+            - "80:80"
+            - "443:443"
+            - "8080:8080"
+        volumes:
+            - '/var/run/docker.sock:/var/run/docker.sock:ro'
+            - './data/traefik/etc/traefik:/etc/traefik'
+            - './traefik/traefik.toml:/etc/traefik/traefik.toml'
+            - './traefik/dynamic_conf.toml:/etc/traefik/dynamic_conf.toml'
+        environment:
+            TZ: "America/Los_Angeles"
+            CF_DNS_API_TOKEN: "${CF_DNS_API_TOKEN}"
+        networks:
+            - traefik
+            # External for LetsEncrypt, etc.
+            - external
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.backend=traefik"
+            - "traefik.http.services.traefik.loadbalancer.server.port=8080"
+            - "traefik.http.routers.traefik.entryPoints=http, https"
+            - "traefik.http.routers.traefik.rule=host(`traefik.${TRAEFIK_DOMAIN}`)"
+            - "traefik.http.routers.traefik.tls=true"
+            - "traefik.http.routers.traefik.tls.certResolver=cloudflare"

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -x
+
+docker-compose $(2>/dev/null find . \
+	-type f \
+	-name 'docker-compose.yml' \
+	-exec bash -c 'echo "-f {} "' \;) $@

@@ -1,0 +1,11 @@
+version: '3.7'
+
+services:
+    dnscrypt:
+        image: dnscrypt
+        container_name: dnscrypt
+        volumes:
+            - "./dnscrypt-proxy/dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml"
+        networks:
+            dns:
+                ipv4_address: 172.16.238.2

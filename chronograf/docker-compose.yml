@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+    chronograf:
+        container_name: chronograf
+        image: chronograf:latest
+        environment:
+            RESOURCES_PATH: "/usr/share/chronograf/resources"
+        volumes:
+            - "./data/chronograf/chronograf.data:/var/lib/chronograf"
+        networks:
+            - traefik
+            - internal
+        depends_on:
+            - kapacitor
+            - influxdb
+            - telegraf
+            - traefik
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.backend=chronograf"
+            - "traefik.http.routers.chronograf.entryPoints=http, https"
+            - "traefik.http.routers.chronograf.rule=Host(`chronograf.${TRAEFIK_DOMAIN}`)"
+            - "traefik.http.routers.chronograf.tls=true"
+            - "traefik.http.routers.chronograf.tls.certResolver=cloudflare"
+            - "traefik.docker.network=${COMPOSE_PROJECT_NAME}_traefik"
+            - "traefik.http.services.chronograf.loadbalancer.server.port=8888"
