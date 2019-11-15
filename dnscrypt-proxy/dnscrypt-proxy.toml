@@ -73,10 +73,10 @@ doh_servers = true
 require_dnssec = true
 
 # Server must not log user queries (declarative)
-require_nolog = true
+require_nolog = false
 
 # Server must not enforce its own blacklist (for parental control, ads blocking...)
-require_nofilter = false
+require_nofilter = true
 
 # Server names to avoid even if they match all criteria
 disabled_server_names = []
@@ -223,7 +223,7 @@ netprobe_timeout = 60
 ## On other operating systems, the connection will be initialized
 ## but nothing will be sent at all.
 
-netprobe_address = '1.1.1.1:53'
+netprobe_address = '1.1.1.1:443'
 
 
 ## Offline mode - Do not use any remote encrypted servers.
@@ -342,12 +342,12 @@ cache_neg_max_ttl = 600
   ## Path to the query log file (absolute, or relative to the same directory as the executable file)
   ## Can be /dev/stdout to log to the standard output (and set log_files_max_size to 0)
 
-  file = 'query.log'
+  #file = 'query.log'
 
 
   ## Query log format (currently supported: tsv and ltsv)
 
-  format = 'tsv'
+  #format = 'tsv'
 
 
   ## Do not log these query types, to reduce verbosity. Keep empty to log everything.

@@ -4,7 +4,7 @@ ARG VERSION=2.0.31
 ARG ARCH=arm
 ARG DCP=dnscrypt-proxy
 
-RUN apk add --update bind-tools curl bash libcap && \
+RUN apk add --update bind-tools curl libcap && \
 	rm -rf /var/cache/apk/*
 
 RUN echo $(uname -a)

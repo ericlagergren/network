@@ -8,6 +8,8 @@ services:
             - "./data/influxdb/var/lib/influxdb:/var/lib/influxdb"
             - "./data/influxdb/etc/influxdb:/etc/influxdb"
             - "./influxdb/influxdb.conf:/etc/influxdb/influxdb.conf"
+        environment:
+            INFLUXDB_REPORTING_DISABLED: "true"
         networks:
             - internal
         restart: unless-stopped

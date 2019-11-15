@@ -5,6 +5,7 @@ services:
         image: dnscrypt
         container_name: dnscrypt
         volumes:
+            - "./data/dnscrypt-proxy:/etc/dnscrypt-proxy"
             - "./dnscrypt-proxy/dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml"
         networks:
             dns:
