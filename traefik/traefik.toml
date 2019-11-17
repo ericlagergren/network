@@ -1,6 +1,9 @@
 [log]
   level = "DEBUG"
 
+[serversTransport]
+  insecureSkipVerify = true
+
 [entryPoints]
   [entryPoints.http]
     address = ":80"

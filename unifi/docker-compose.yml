@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+    unifi:
+        image: linuxserver/unifi-controller:latest
+        container_name: unifi
+        environment:
+            PUID: "1000"
+            PGID: "1000"
+            MEM_LIMIT: "1024M"
+        volumes:
+            - "./data/unifi:/config"
+        ports:
+            - 3478:3478/udp
+            - 10001:10001/udp
+            - 8080:8080
+            - 8081:8081
+            - 8443:8443
+            - 8843:8843
+            - 8880:8880
+            - 6789:6789
+        depends_on:
+            - traefik
+        networks:
+            - traefik
+            - external
+        restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.backend=unifi"
+            - "traefik.http.routers.unifi.entryPoints=http, https"
+            - "traefik.http.routers.unifi.rule=Host(`unifi.${TRAEFIK_DOMAIN}`)"
+            - "traefik.http.routers.unifi.tls=true"
+            - "traefik.http.routers.unifi.tls.certResolver=cloudflare"
+            - "traefik.http.services.unifi.loadbalancer.server.port=8443"
+            - "traefik.http.services.unifi.loadbalancer.server.scheme=https"
+            - "traefik.docker.network=${COMPOSE_PROJECT_NAME}_traefik"
