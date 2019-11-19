@@ -8,7 +8,7 @@ services:
             - "53:53/tcp"
             - "53:53/udp"
         environment:
-            ServerIP: "192.168.1.244"
+            ServerIP: "172.16.238.3"
             TZ: 'America/Los_Angeles'
             DNSSEC: "false"
             DNS1: "172.16.238.2#5300"
@@ -17,7 +17,8 @@ services:
             VIRTUAL_HOST: "pihole.${TRAEFIK_DOMAIN}"
             VIRTUAL_PORT: "80"
             PROXY_LOCATION: "pihole"
-            WEBPASSWORD: "NhLisVLfe3AiuHoGPrmkfUJBfKfaNTfPpgBqpW2kjVEoCyr8ZYZqdPxriQmMmM4B"
+            WEBPASSWORD: "${PIHOLE_WEBPASSWORD}"
+            BLOCKINGMODE: "NXDOMAIN"
         volumes:
             - './data/pihole/etc/pihole:/etc/pihole'
             - './data/pihole/dnsmasq.d:/etc/dnsmasq.d'
@@ -25,6 +26,7 @@ services:
             - './pihole/03-local.conf:/etc/dnsmasq.d/03-local.conf'
         dns:
             - 127.0.0.1
+            - 1.1.1.1
         networks:
             # External for downloading block lists, etc.
             external:
