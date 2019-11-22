@@ -11,14 +11,21 @@ services:
         volumes:
             - "./data/unifi:/config"
         ports:
+            # Used for STUN.
             - 3478:3478/udp
-            - 10001:10001/udp
+            # Used for device <-> controller communication.
             - 8080:8080
-            - 8081:8081
-            - 8443:8443
-            - 8843:8843
+            # Used for web browser GUI. No need to export since we proxy with
+            # Traefik.
+            # - 8443:8443
+            # HTTPS portal redirection.
+            # - 8843:8843
+            # HTTP portal redirection.
             - 8880:8880
+            # UniFi mobile speed test.
             - 6789:6789
+            # Device discovery.
+            - 10001:10001/udp
         depends_on:
             - traefik
         networks:
@@ -28,10 +35,18 @@ services:
         labels:
             - "traefik.enable=true"
             - "traefik.backend=unifi"
-            - "traefik.http.routers.unifi.entryPoints=http, https"
-            - "traefik.http.routers.unifi.rule=Host(`unifi.${TRAEFIK_DOMAIN}`)"
-            - "traefik.http.routers.unifi.tls=true"
-            - "traefik.http.routers.unifi.tls.certResolver=cloudflare"
-            - "traefik.http.services.unifi.loadbalancer.server.port=8443"
-            - "traefik.http.services.unifi.loadbalancer.server.scheme=https"
             - "traefik.docker.network=${COMPOSE_PROJECT_NAME}_traefik"
+            - "traefik.http.routers.r-unifi-web.tls=true"
+            - "traefik.http.routers.r-unifi-web.tls.certResolver=cloudflare"
+            - "traefik.http.routers.r-unifi-web.entryPoints=http, https"
+            - "traefik.http.routers.r-unifi-web.rule=Host(`unifi.${TRAEFIK_DOMAIN}`)"
+            - "traefik.http.routers.r-unifi-web.service=s-unifi-web"
+            - "traefik.http.services.s-unifi-web.loadbalancer.server.port=8443"
+            - "traefik.http.services.s-unifi-web.loadbalancer.server.scheme=https"
+            - "traefik.http.routers.r-unifi-portal.tls=true"
+            - "traefik.http.routers.r-unifi-portal.tls.certResolver=cloudflare"
+            - "traefik.http.routers.r-unifi-portal.entryPoints=http, https, https-alt"
+            - "traefik.http.routers.r-unifi-portal.rule=Host(`portal.${TRAEFIK_DOMAIN}`)"
+            - "traefik.http.routers.r-unifi-portal.service=s-unifi-portal"
+            - "traefik.http.services.s-unifi-portal.loadbalancer.server.port=8843"
+            - "traefik.http.services.s-unifi-portal.loadbalancer.server.scheme=https"

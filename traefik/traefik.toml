@@ -9,6 +9,8 @@
     address = ":80"
   [entryPoints.https]
     address = ":443"
+  [entryPoints.https-alt]
+    address = ":8843"
 
 [api]
   dashboard = true
@@ -16,7 +18,7 @@
 
 [providers]
   [providers.file]
-    filename = "/etc/traefik/dynamic_conf.toml"
+    filename = "/etc/traefik/traefik_dynamic.toml"
   [providers.docker]
     endpoint = "unix:///var/run/docker.sock"
     watch = true
