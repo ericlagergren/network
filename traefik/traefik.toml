@@ -1,5 +1,5 @@
 [log]
-  level = "DEBUG"
+  level = "INFO"
 
 [serversTransport]
   insecureSkipVerify = true
@@ -9,7 +9,7 @@
     address = ":80"
   [entryPoints.https]
     address = ":443"
-  [entryPoints.https-alt]
+  [entryPoints.8843]
     address = ":8843"
 
 [api]
@@ -18,7 +18,7 @@
 
 [providers]
   [providers.file]
-    filename = "/etc/traefik/traefik_dynamic.toml"
+    filename = "/etc/traefik/dynamic.toml"
   [providers.docker]
     endpoint = "unix:///var/run/docker.sock"
     watch = true
@@ -33,3 +33,7 @@
   [certificatesResolvers.cloudflare.acme.dnsChallenge]
     provider = "cloudflare"
     resolvers = ["1.1.1.1:53", "1.0.0.1:53"]
+
+[metrics]
+  [metrics.influxDB]
+    address = "influxdb:8089"

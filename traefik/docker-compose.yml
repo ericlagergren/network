@@ -13,7 +13,7 @@ services:
             - '/var/run/docker.sock:/var/run/docker.sock:ro'
             - './data/traefik/etc/traefik:/etc/traefik'
             - './traefik/traefik.toml:/etc/traefik/traefik.toml'
-            - './traefik/traefik_dynamic.toml:/etc/traefik/traefik_dynamic.toml'
+            - './traefik/dynamic.toml:/etc/traefik/dynamic.toml'
         environment:
             TZ: "America/Los_Angeles"
             CF_DNS_API_TOKEN: "${CF_DNS_API_TOKEN}"

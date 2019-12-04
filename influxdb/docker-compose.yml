@@ -11,5 +11,16 @@ services:
         environment:
             INFLUXDB_REPORTING_DISABLED: "true"
         networks:
+            - traefik
             - internal
         restart: unless-stopped
+        labels:
+            - "traefik.enable=true"
+            - "traefik.backend=influxdb"
+            - "traefik.docker.network=${COMPOSE_PROJECT_NAME}_traefik"
+            - "traefik.http.routers.influxdb.tls=true"
+            - "traefik.http.routers.influxdb.tls.certResolver=cloudflare"
+            - "traefik.http.routers.influxdb.entryPoints=http, https"
+            - "traefik.http.routers.influxdb.rule=Host(`influxdb.${TRAEFIK_DOMAIN}`)"
+            - "traefik.http.routers.influxdb.service=influxdb"
+            - "traefik.http.services.influxdb.loadbalancer.server.port=8086"

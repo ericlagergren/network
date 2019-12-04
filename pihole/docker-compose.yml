@@ -5,7 +5,9 @@ services:
         image: pihole/pihole:latest
         container_name: pihole
         ports:
+            # Used for DNS.
             - "53:53/tcp"
+            # Used for DNS.
             - "53:53/udp"
         environment:
             ServerIP: "172.16.238.3"
@@ -14,7 +16,7 @@ services:
             DNS1: "172.16.238.2#5300"
             DNS2: "172.16.238.2#5300"
             IPv6: "false"
-            VIRTUAL_HOST: "pihole.${TRAEFIK_DOMAIN}"
+            VIRTUAL_HOST: "pihole-alt1.${TRAEFIK_DOMAIN}"
             VIRTUAL_PORT: "80"
             PROXY_LOCATION: "pihole"
             WEBPASSWORD: "${PIHOLE_WEBPASSWORD}"
@@ -39,12 +41,12 @@ services:
         restart: unless-stopped
         labels:
             - "traefik.enable=true"
-            - "traefik.backend=pihole"
-            - "traefik.http.routers.pihole.entryPoints=http, https"
-            - "traefik.http.routers.pihole.rule=Host(`pihole.${TRAEFIK_DOMAIN}`)"
-            - "traefik.http.routers.pihole.tls=true"
-            - "traefik.http.routers.pihole.tls.certResolver=cloudflare"
-            - "traefik.http.routers.pihole.middlewares=pihole"
-            - "traefik.http.middlewares.pihole.addprefix.prefix=/admin"
-            - "traefik.http.services.pihole.loadbalancer.server.port=80"
+            - "traefik.backend=pihole-alt1"
+            - "traefik.http.routers.pihole-alt1.entryPoints=http, https"
+            - "traefik.http.routers.pihole-alt1.rule=Host(`pihole-alt1.${TRAEFIK_DOMAIN}`)"
+            - "traefik.http.routers.pihole-alt1.tls=true"
+            - "traefik.http.routers.pihole-alt1.tls.certResolver=cloudflare"
+            - "traefik.http.routers.pihole-alt1.middlewares=pihole-alt1"
+            - "traefik.http.middlewares.pihole-alt1.addprefix.prefix=/admin"
+            - "traefik.http.services.pihole-alt1.loadbalancer.server.port=80"
             - "traefik.docker.network=${COMPOSE_PROJECT_NAME}_traefik"

@@ -1,16 +1,28 @@
-[http.routers]
-  [http.routers.https-only]
-    entryPoints = ["http"]
-    middlewares = ["httpsredirect"]
-    rule = "HostRegexp(`{host:.+}`)"
-    # Only here so the router is valid, is never actually used
-    service = "noop"
+[http]
+  [http.routers]
+    [http.routers.https-only]
+      entryPoints = ["http"]
+      middlewares = ["httpsredirect"]
+      rule = "HostRegexp(`{host:.+}`)"
+      service = "noop"
+    [http.routers.pihole]
+      entryPoints = ["http", "https"]
+      middlewares = ["pihole"]
+	  rule = "Host(`pihole.ericlagergren.com`)"
+	  service = "pihole"
+	  [http.routers.pihole.tls]
+	    certResolver = "cloudflare"
 
-[http.services]
-  [http.services.noop.loadBalancer]
-    [[http.services.noop.loadBalancer.servers]]
-      url = "http://127.0.0.1"
+  [http.services]
+    [http.services.noop.loadBalancer]
+      [[http.services.noop.loadBalancer.servers]]
+        url = "http://127.0.0.1"
+    [http.services.pihole.loadbalancer]
+	  [[http.services.pihole.loadbalancer.servers]]
+	    url = "http://pihole.ericlagergren.com:80"
 
-[http.middlewares]
-  [http.middlewares.httpsredirect.redirectScheme]
-    scheme = "https"
+  [http.middlewares]
+    [http.middlewares.httpsredirect.redirectScheme]
+      scheme = "https"
+    [http.middlewares.pihole.addprefix]
+	  prefix = "/admin"

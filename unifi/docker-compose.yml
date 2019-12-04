@@ -45,7 +45,7 @@ services:
             - "traefik.http.services.s-unifi-web.loadbalancer.server.scheme=https"
             - "traefik.http.routers.r-unifi-portal.tls=true"
             - "traefik.http.routers.r-unifi-portal.tls.certResolver=cloudflare"
-            - "traefik.http.routers.r-unifi-portal.entryPoints=http, https, https-alt"
+            - "traefik.http.routers.r-unifi-portal.entryPoints=http, https, 8843"
             - "traefik.http.routers.r-unifi-portal.rule=Host(`portal.${TRAEFIK_DOMAIN}`)"
             - "traefik.http.routers.r-unifi-portal.service=s-unifi-portal"
             - "traefik.http.services.s-unifi-portal.loadbalancer.server.port=8843"
