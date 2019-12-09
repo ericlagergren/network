@@ -12,6 +12,12 @@
 	  service = "pihole"
 	  [http.routers.pihole.tls]
 	    certResolver = "cloudflare"
+	[http.routers.printer]
+	  entryPoints = ["http", "https"]
+	  rule = "Host(`printer.ericlagergren.com`)"
+	  service = "printer"
+	  [http.routers.printer.tls]
+	    certResolver = "cloudflare"
 
   [http.services]
     [http.services.noop.loadBalancer]
@@ -19,7 +25,10 @@
         url = "http://127.0.0.1"
     [http.services.pihole.loadbalancer]
 	  [[http.services.pihole.loadbalancer.servers]]
-	    url = "http://pihole.ericlagergren.com:80"
+	    url = "http://dns1.ericlagergren.com:80"
+	[http.services.printer.loadbalancer]
+	  [[http.services.printer.loadbalancer.servers]]
+	    url = "https://prnt1.ericlagergren.com"
 
   [http.middlewares]
     [http.middlewares.httpsredirect.redirectScheme]
