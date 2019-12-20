@@ -5,6 +5,24 @@
       middlewares = ["httpsredirect"]
       rule = "HostRegexp(`{host:.+}`)"
       service = "noop"
+	[http.routers.erx]
+	  entryPoints = ["http", "https"]
+	  rule = "Host(`router.ericlagergren.com`)"
+	  service = "erx"
+	  [http.routers.erx.tls]
+	    certResolver = "cloudflare"
+	[http.routers.r-unifi-web]
+	  entryPoints = ["http", "https"]
+	  rule = "Host(`unifi.ericlagergren.com`)"
+	  service = "s-unifi-web"
+	  [http.routers.r-unifi-web.tls]
+	    certResolver = "cloudflare"
+	[http.routers.r-unifi-portal]
+	  entryPoints = ["http", "https", "8843"]
+	  rule = "Host(`portal.ericlagergren.com`)"
+	  service = "s-unifi-portal"
+	  [http.routers.r-unifi-portal.tls]
+	    certResolver = "cloudflare"
     [http.routers.pihole]
       entryPoints = ["http", "https"]
       middlewares = ["pihole"]
@@ -23,6 +41,15 @@
     [http.services.noop.loadBalancer]
       [[http.services.noop.loadBalancer.servers]]
         url = "http://127.0.0.1"
+	[http.services.erx.loadBalancer]
+	  [[http.services.erx.loadBalancer.servers]]
+	    url = "https://192.168.1.1:443"
+	[http.services.s-unifi-web.loadBalancer]
+	  [[http.services.s-unifi-web.loadBalancer.servers]]
+	    url = "https://192.168.1.2:8443"
+	[http.services.s-unifi-portal.loadBalancer]
+	  [[http.services.s-unifi-portal.loadBalancer.servers]]
+	    url = "https://192.168.1.2:8843"
     [http.services.pihole.loadbalancer]
 	  [[http.services.pihole.loadbalancer.servers]]
 	    url = "http://dns1.ericlagergren.com:80"
