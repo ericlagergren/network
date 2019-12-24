@@ -43,13 +43,13 @@
         url = "http://127.0.0.1"
 	[http.services.erx.loadBalancer]
 	  [[http.services.erx.loadBalancer.servers]]
-	    url = "https://192.168.1.1:443"
+	    url = "https://erx.ericlagergren.com:443"
 	[http.services.s-unifi-web.loadBalancer]
 	  [[http.services.s-unifi-web.loadBalancer.servers]]
-	    url = "https://192.168.1.2:8443"
+	    url = "https://unifi:8443"
 	[http.services.s-unifi-portal.loadBalancer]
 	  [[http.services.s-unifi-portal.loadBalancer.servers]]
-	    url = "https://192.168.1.2:8843"
+	    url = "https://unifi:8843"
     [http.services.pihole.loadbalancer]
 	  [[http.services.pihole.loadbalancer.servers]]
 	    url = "http://dns1.ericlagergren.com:80"
