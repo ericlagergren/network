@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-ARG VERSION=2.0.31
+ARG VERSION=2.0.36
 ARG ARCH=arm
 ARG DCP=dnscrypt-proxy
 
