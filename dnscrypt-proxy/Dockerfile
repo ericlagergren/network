@@ -1,6 +1,6 @@
 FROM alpine:latest
 
-ARG VERSION=2.0.39
+ARG VERSION=2.0.45
 ARG ARCH=arm
 ARG DCP=dnscrypt-proxy
 
@@ -16,10 +16,13 @@ RUN curl -sL https://github.com/jedisct1/${DCP}/releases/download/${VERSION}/${D
 	mv /etc/${DCP}/${DCP} /usr/local/bin && \
 	setcap 'cap_net_bind_service=+ep' /usr/local/bin/${DCP}
 
+ADD ip-blacklist.txt /etc/${DCP}/ip-blacklist.txt
+
 RUN mkdir -p /var/run/${DCP} && \
 	addgroup -g 1000 dnscrypt && \
 	adduser -SHD -u 1000 -G dnscrypt dnscrypt && \
 	chown -R dnscrypt:dnscrypt /etc/${DCP} /var/run/${DCP}
+
 
 USER dnscrypt
 

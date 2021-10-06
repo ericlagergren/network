@@ -2,11 +2,12 @@ version: '3.7'
 
 services:
     dnscrypt:
-        image: dnscrypt
+        image: dnscrypt:2.0.45
         container_name: dnscrypt
         volumes:
             - "./data/dnscrypt-proxy:/etc/dnscrypt-proxy"
             - "./dnscrypt-proxy/dnscrypt-proxy.toml:/etc/dnscrypt-proxy/dnscrypt-proxy.toml"
+            - "./dnscrypt-proxy/ip-blacklist.txt:/etc/dnscrypt-proxy/ip-blacklist.txt"
         networks:
             dns:
                 ipv4_address: 172.16.238.2
